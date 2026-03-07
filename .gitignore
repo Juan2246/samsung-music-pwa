@@ -1,0 +1,40 @@
+# Dependencias
+node_modules/
+
+# Build de Next.js
+.next/
+out/
+build/
+
+# Variables de entorno (credenciales). Solo se versiona .env.example
+.env
+.env.*
+!.env.example
+
+# Binario de yt-dlp (se instala aparte, ver README)
+yt-dlp
+yt-dlp.exe
+yt-dlp_*
+
+# Service worker y Workbox generados por @ducanh2912/next-pwa en public/
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map
+public/swe-worker-*.js
+public/swe-worker-*.js.map
+public/fallback-*.js
+
+# Logs y basura
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel
+
+# Volcados y scripts de experimentación locales
+spotify_dump.html
+test_*.js
+test_*.mjs
