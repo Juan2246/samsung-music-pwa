@@ -98,6 +98,7 @@ export default function SearchBar({ onSearch, isLoading, placeholder }) {
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           placeholder={placeholder || 'Buscar canción o artista...'}
+          aria-label={placeholder || 'Buscar canción o artista'}
           autoComplete="off"
           autoCorrect="off"
           spellCheck="false"
@@ -126,7 +127,7 @@ export default function SearchBar({ onSearch, isLoading, placeholder }) {
         <button
           type="submit"
           id="search-submit"
-          className="m-1.5 px-4 py-2.5 bg-accent hover:bg-accentLight text-white rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 shrink-0"
+          className="m-1.5 px-4 py-2.5 bg-accentDark hover:bg-[#1450e6] text-white rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 shrink-0"
         >
           Buscar
         </button>

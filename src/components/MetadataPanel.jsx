@@ -42,10 +42,12 @@ export default function MetadataPanel({ song, lyrics, isLoadingLyrics, onMetadat
         </div>
         <div className="flex items-center gap-2">
           <button
+            type="button"
+            aria-pressed={editMode}
             onClick={() => setEditMode(!editMode)}
             className={`text-xs px-3 py-1.5 rounded-xl transition-all duration-200 ${
               editMode
-                ? 'bg-accent text-white'
+                ? 'bg-accentDark text-white'
                 : 'bg-surfaceHigh text-textSecondary hover:text-textPrimary'
             }`}
           >
@@ -60,7 +62,7 @@ export default function MetadataPanel({ song, lyrics, isLoadingLyrics, onMetadat
           {song.coverThumb ? (
             <img
               src={song.coverThumb}
-              alt="Cover"
+              alt={`Portada de ${song.album || song.title}`}
               className="w-full h-full object-cover"
             />
           ) : (
@@ -112,7 +114,8 @@ export default function MetadataPanel({ song, lyrics, isLoadingLyrics, onMetadat
                     type="text"
                     value={fields[field]}
                     onChange={(e) => handleChange(field, e.target.value)}
-                    className="w-full bg-transparent text-sm text-textPrimary focus:outline-none mt-0.5"
+                    aria-label={`${label} (${key})`}
+                    className="w-full bg-transparent text-sm text-textPrimary mt-0.5 rounded"
                     placeholder={`Ingresa ${label.toLowerCase()}...`}
                   />
                 ) : (
@@ -129,6 +132,8 @@ export default function MetadataPanel({ song, lyrics, isLoadingLyrics, onMetadat
       {/* Lyrics section */}
       <div className="mt-4">
         <button
+          type="button"
+          aria-expanded={expanded}
           onClick={() => setExpanded(!expanded)}
           className="w-full flex items-center justify-between p-3 bg-surface rounded-xl border border-border hover:border-accent/30 transition-all duration-200"
         >

@@ -117,7 +117,7 @@ export default function AlbumView({ album, tracks }) {
       <div className="card-elevated p-4 flex gap-4 bg-surfaceHigh">
         <div className="w-24 h-24 rounded-2xl overflow-hidden shrink-0 shadow-lg relative">
           {album.coverUrl ? (
-            <img src={album.coverUrl} alt={album.title} className="w-full h-full object-cover" />
+            <img src={album.coverUrl} alt={`Portada de ${album.title}`} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-surface flex items-center justify-center">💿</div>
           )}
@@ -154,6 +154,7 @@ export default function AlbumView({ album, tracks }) {
               type="checkbox" 
               checked={isAllSelected} 
               onChange={toggleAll}
+              aria-label="Seleccionar todas las canciones"
               className="w-5 h-5 rounded-md border-border text-accent focus:ring-accent accent-accent bg-surfaceHigh"
             />
             <span className="text-sm font-medium text-textPrimary group-hover:text-accent transition-colors">
@@ -171,10 +172,10 @@ export default function AlbumView({ album, tracks }) {
           className={`w-full py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-3 transition-all duration-300 relative overflow-hidden
             ${
               isDownloadingAll
-                ? 'bg-accent/50 text-white cursor-not-allowed'
+                ? 'bg-accentDark/70 text-white cursor-not-allowed'
                 : selectedCount === 0
                 ? 'bg-surfaceElevated text-textMuted cursor-not-allowed'
-                : 'bg-accent hover:bg-accentLight text-white shadow-glow'
+                : 'bg-accentDark hover:bg-[#1450e6] text-white shadow-glow'
             }
           `}
         >
@@ -216,6 +217,7 @@ export default function AlbumView({ album, tracks }) {
                   type="checkbox" 
                   checked={isSelected}
                   onChange={() => toggleSelection(track.id)}
+                  aria-label={`Seleccionar ${track.title}`}
                   disabled={isDownloadingAll}
                   className="w-4 h-4 rounded mt-1 shrink-0 accent-accent"
                 />
@@ -233,7 +235,7 @@ export default function AlbumView({ album, tracks }) {
                   </div>
                 )}
                 {ds.state === 'error' && (
-                  <button onClick={() => downloadTrack(track)} className="shrink-0 text-xs text-error hover:underline">
+                  <button type="button" onClick={() => downloadTrack(track)} className="shrink-0 text-xs text-error hover:underline">
                     Reintentar
                   </button>
                 )}
@@ -246,7 +248,7 @@ export default function AlbumView({ album, tracks }) {
 
               {/* Individual Progress Bar */}
               {(ds.state === 'loading' || ds.state === 'done') && (
-                <div className="mt-3 ml-7 pl-4 border-l-2 border-surfaceHigh animate-fade-in">
+                <div className="mt-3 ml-7 pl-4 border-l-2 border-surfaceHigh animate-fade-in" aria-live="polite">
                   <div className="flex justify-between text-[10px] text-textMuted mb-1.5">
                     <span>{ds.message}</span>
                     <span className="font-mono">{ds.progress || 0}%</span>

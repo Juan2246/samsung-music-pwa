@@ -250,34 +250,39 @@ export default function HomePage() {
           {/* Tabs */}
           <div className="flex p-1 bg-surfaceHigh rounded-2xl mb-4 border border-border">
             <button
+              type="button"
+              aria-pressed={activeTab === 'song'}
               onClick={() => switchTab('song')}
               className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
                 activeTab === 'song'
-                  ? 'bg-accent text-white shadow-glow'
+                  ? 'bg-accentDark text-white shadow-glow'
                   : 'text-textMuted hover:text-textPrimary'
               }`}
             >
-              🎵 Canciones
+              <span aria-hidden="true">🎵</span> Canciones
             </button>
             <button
+              type="button"
+              aria-pressed={activeTab === 'album'}
               onClick={() => switchTab('album')}
               className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
                 activeTab === 'album'
-                  ? 'bg-accent text-white shadow-glow'
+                  ? 'bg-accentDark text-white shadow-glow'
                   : 'text-textMuted hover:text-textPrimary'
               }`}
             >
-              💿 Álbumes
+              <span aria-hidden="true">💿</span> Álbumes
             </button>
             <label
-              className={`flex-1 flex items-center justify-center py-2 text-sm font-semibold rounded-xl transition-all duration-300 cursor-pointer ${
+              className={`flex-1 flex items-center justify-center py-2 text-sm font-semibold rounded-xl transition-all duration-300 cursor-pointer focus-within:ring-2 focus-within:ring-accentLight ${
                 activeTab === 'csv'
-                  ? 'bg-accent text-white shadow-glow'
+                  ? 'bg-accentDark text-white shadow-glow'
                   : 'text-textMuted hover:text-textPrimary'
               }`}
             >
-              📄 Subir CSV
-              <input type="file" accept=".csv" className="hidden" onChange={handleCSVUpload} />
+              <span aria-hidden="true">📄</span>&nbsp;Subir CSV
+              {/* sr-only (no hidden) para que el campo siga siendo alcanzable con teclado */}
+              <input type="file" accept=".csv,text/csv" className="sr-only" onChange={handleCSVUpload} />
             </label>
           </div>
 
@@ -340,7 +345,7 @@ export default function HomePage() {
 
         {/* Search error */}
         {searchError && (
-          <div className="p-4 bg-error/10 border border-error/30 rounded-2xl mb-4 animate-fade-in">
+          <div role="alert" className="p-4 bg-error/10 border border-error/30 rounded-2xl mb-4 animate-fade-in">
             <p className="text-sm text-error text-center">{searchError}</p>
           </div>
         )}

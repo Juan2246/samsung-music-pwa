@@ -11,7 +11,7 @@
   --accent-light: #6b9fff;
   --text-primary: #f0f0f8;
   --text-secondary: #9898b0;
-  --text-muted: #5a5a78;
+  --text-muted: #8e8eaa;
   --border: #2a2a3e;
 }
 
@@ -30,6 +30,12 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Foco visible para quien navega con teclado */
+:focus-visible {
+  outline: 2px solid #6b9fff;
+  outline-offset: 2px;
 }
 
 /* Custom scrollbar */
@@ -72,7 +78,7 @@ body {
 
 /* Button base */
 .btn-primary {
-  @apply bg-accent hover:bg-accentLight active:bg-accentDark text-white font-semibold py-3 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 select-none;
+  @apply bg-accentDark hover:bg-[#1450e6] active:bg-accentDark text-white font-semibold py-3 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 select-none;
   box-shadow: 0 4px 16px rgba(61, 126, 255, 0.3);
 }
 

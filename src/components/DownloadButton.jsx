@@ -45,7 +45,7 @@ export default function DownloadButton({ song, metadata, lyrics }) {
     <div className="space-y-3">
       {/* Progress bar */}
       {state === 'loading' && (
-        <div className="space-y-2 animate-fade-in">
+        <div className="space-y-2 animate-fade-in" aria-live="polite">
           <div className="flex justify-between text-xs text-textMuted">
             <span>
               {progress < 10
@@ -60,7 +60,14 @@ export default function DownloadButton({ song, metadata, lyrics }) {
             </span>
             <span className="font-mono text-accent">{progress}%</span>
           </div>
-          <div className="w-full h-2.5 bg-surfaceHigh rounded-full overflow-hidden">
+          <div
+            className="w-full h-2.5 bg-surfaceHigh rounded-full overflow-hidden"
+            role="progressbar"
+            aria-label="Progreso de la descarga"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progress}
+          >
             <div
               className="h-full bg-gradient-to-r from-accent to-accentLight rounded-full transition-all duration-500 ease-out"
               style={{ width: `${progress}%` }}
@@ -71,7 +78,7 @@ export default function DownloadButton({ song, metadata, lyrics }) {
 
       {/* Error message */}
       {state === 'error' && (
-        <div className="p-3 bg-error/10 border border-error/30 rounded-xl animate-fade-in">
+        <div role="alert" className="p-3 bg-error/10 border border-error/30 rounded-xl animate-fade-in">
           <p className="text-xs text-error font-medium mb-1">Error al descargar</p>
           <p className="text-xs text-error/80">{errorMsg}</p>
         </div>
@@ -87,10 +94,10 @@ export default function DownloadButton({ song, metadata, lyrics }) {
             state === 'done'
               ? 'bg-success text-white'
               : state === 'loading'
-              ? 'bg-accent/50 text-white cursor-not-allowed'
+              ? 'bg-accentDark/70 text-white cursor-not-allowed'
               : !song
               ? 'bg-surfaceElevated text-textMuted cursor-not-allowed border border-border'
-              : 'bg-accent hover:bg-accentLight text-white cursor-pointer'
+              : 'bg-accentDark hover:bg-[#1450e6] text-white cursor-pointer'
           }
         `}
         style={

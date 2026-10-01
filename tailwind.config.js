@@ -17,7 +17,8 @@ module.exports = {
         accentDark: '#1a5cff',
         textPrimary: '#f0f0f8',
         textSecondary: '#9898b0',
-        textMuted: '#5a5a78',
+        // #5a5a78 original daba 3:1 sobre el fondo; este llega a ~6:1 (AA en texto pequeño)
+        textMuted: '#8e8eaa',
         success: '#4caf50',
         warning: '#ff9800',
         error: '#f44336',

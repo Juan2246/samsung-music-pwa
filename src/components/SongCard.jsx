@@ -12,6 +12,8 @@ export default function SongCard({ song, isSelected, onClick }) {
 
   return (
     <button
+      type="button"
+      aria-pressed={isSelected}
       onClick={() => onClick(song)}
       id={`song-card-${song.id}`}
       className={`w-full text-left flex items-center gap-3 p-3 rounded-2xl transition-all duration-200 group relative overflow-hidden
@@ -27,7 +29,7 @@ export default function SongCard({ song, isSelected, onClick }) {
         {thumb ? (
           <img
             src={thumb}
-            alt={`${song.album} cover`}
+            alt={`Portada de ${song.album}`}
             className="w-full h-full object-cover"
             loading="lazy"
           />

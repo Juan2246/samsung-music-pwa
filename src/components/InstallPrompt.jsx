@@ -53,6 +53,7 @@ export default function InstallPrompt() {
         {/* Buttons */}
         <div className="flex gap-2 shrink-0">
           <button
+            type="button"
             onClick={handleDismiss}
             className="p-2 rounded-xl text-textMuted hover:text-textPrimary hover:bg-surfaceHigh transition-all duration-200"
             aria-label="Cerrar"
@@ -64,7 +65,8 @@ export default function InstallPrompt() {
           <button
             onClick={handleInstall}
             id="pwa-install-btn"
-            className="px-4 py-2 bg-accent hover:bg-accentLight text-white text-sm font-semibold rounded-xl transition-all duration-200 active:scale-95"
+            type="button"
+            className="px-4 py-2 bg-accentDark hover:bg-[#1450e6] text-white text-sm font-semibold rounded-xl transition-all duration-200 active:scale-95"
           >
             Instalar
           </button>
