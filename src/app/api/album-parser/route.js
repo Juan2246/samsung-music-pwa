@@ -254,11 +254,25 @@ async function fetchYouTubeList(yt, { playlistId, isYTMusic }) {
   }
 }
 
+// YouTube Music entrega miniaturas de 60–120 px; su CDN acepta otro tamaño en la URL.
+function largeThumbnail(url) {
+  if (!url) return null;
+  return url.replace(/=w\d+-h\d+/, '=w600-h600');
+}
+
+function artistNames(video) {
+  return (video.artists || []).map((a) => a.name).filter(Boolean).join(', ');
+}
+
 function toYouTubeTrack(video, index, albumMetadata) {
   let parsedArtist = albumMetadata.artist;
   let parsedTitle = video.title?.text || video.title || 'Unknown';
 
-  if (parsedTitle.includes(' - ')) {
+  if (artistNames(video)) {
+    // Las pistas de YouTube Music traen los artistas como dato aparte:
+    // no hace falta (y sería un error) partir el título por " - ".
+    parsedArtist = artistNames(video);
+  } else if (parsedTitle.includes(' - ')) {
     const parts = parsedTitle.split(' - ');
     parsedArtist = parts[0].trim();
     parsedTitle = parts.slice(1).join(' - ').trim();
@@ -272,9 +286,52 @@ function toYouTubeTrack(video, index, albumMetadata) {
     title: parsedTitle,
     artist: parsedArtist,
     album: video.album?.name || albumMetadata.title,
-    coverUrl: video.thumbnails?.[video.thumbnails.length - 1]?.url || albumMetadata.coverUrl,
+    coverUrl: largeThumbnail(video.thumbnails?.[0]?.url) || albumMetadata.coverUrl,
     videoId: video.id,
     duration: video.duration?.seconds ? (video.duration.seconds * 1000) : 0,
+  };
+}
+
+// youtubei.js 18 devuelve las playlists normales de YouTube como nodos LockupView
+// (sin .id ni .title directos): se adaptan al formato que espera toYouTubeTrack.
+function normalizeYouTubeItem(item) {
+  if (item?.type !== 'LockupView') return item;
+  if (item.content_type !== 'VIDEO' || !item.content_id) return {};
+  const channel = item.metadata?.metadata?.metadata_rows?.[0]?.metadata_parts?.[0]?.text?.text;
+  return {
+    id: item.content_id,
+    title: item.metadata?.title?.text,
+    author: channel ? { name: channel } : undefined,
+    thumbnails: [{ url: `https://i.ytimg.com/vi/${item.content_id}/hqdefault.jpg` }],
+  };
+}
+
+// Paginación para extraer listas largas sin cortes de 100 en 100 (con tope de seguridad)
+async function collectYouTubeItems(list) {
+  let rawItems = list.items;
+  let currentList = list;
+  for (let page = 0; currentList.has_continuation && page < MAX_YT_PAGES; page++) {
+    try {
+      currentList = await currentList.getContinuation();
+      rawItems = rawItems.concat(currentList.items);
+    } catch (e) {
+      console.warn('YT Continuation ended or failed:', e.message);
+      break;
+    }
+  }
+  // descarta separadores y elementos de continuación sin ID
+  return rawItems.map(normalizeYouTubeItem).filter((v) => v?.id);
+}
+
+// En los álbumes de YouTube Music (OLAK5uy_…) youtubei.js no siempre trae
+// cabecera: se completa con los datos de la primera pista.
+function youTubeAlbumMetadata(list, first) {
+  return {
+    title: list.header?.title?.text || list.info?.title || first.album?.name || 'YouTube Playlist',
+    artist: list.header?.author?.name || list.info?.author?.name || artistNames(first) || 'YouTube',
+    coverUrl: list.header?.thumbnails?.[0]?.url
+             || list.info?.thumbnails?.[0]?.url
+             || largeThumbnail(first.thumbnails?.[0]?.url) || null,
   };
 }
 
@@ -287,30 +344,12 @@ async function handleYouTube(source) {
       return { response: jsonError('No se encontraron las canciones de esta Playlist/Álbum', 404) };
     }
 
+    const items = await collectYouTubeItems(list);
     const albumMetadata = {
-      title: list.header?.title?.text || list.info?.title || 'YouTube Playlist',
-      artist: list.header?.author?.name || list.info?.author?.name || 'YouTube',
-      coverUrl: list.header?.thumbnails?.[list.header.thumbnails.length - 1]?.url
-               || list.info?.thumbnails?.[list.info.thumbnails.length - 1]?.url || null,
-      totalTracks: list.info?.total_items || list.items.length,
+      ...youTubeAlbumMetadata(list, items[0] || {}),
+      totalTracks: items.length, // info.total_items llega como texto ("100 videos")
     };
-
-    // Paginación para extraer listas largas sin cortes de 100 en 100 (con tope de seguridad)
-    let rawItems = list.items;
-    let currentList = list;
-    for (let page = 0; currentList.has_continuation && page < MAX_YT_PAGES; page++) {
-      try {
-        currentList = await currentList.getContinuation();
-        rawItems = rawItems.concat(currentList.items);
-      } catch (e) {
-        console.warn('YT Continuation ended or failed:', e.message);
-        break;
-      }
-    }
-
-    const tracks = rawItems
-      .filter(v => v.id) // descarta separadores y elementos de continuación sin ID
-      .map((video, index) => toYouTubeTrack(video, index, albumMetadata));
+    const tracks = items.map((video, index) => toYouTubeTrack(video, index, albumMetadata));
 
     return { albumMetadata, tracks };
   } catch (ytErr) {
