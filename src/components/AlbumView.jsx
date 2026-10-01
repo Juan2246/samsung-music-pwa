@@ -11,6 +11,7 @@ export default function AlbumView({ album, tracks }) {
   const [downloadStates, setDownloadStates] = useState({}); 
   // Map of id -> { state: 'idle'|'loading'|'done'|'error', progress: 0, errorMsg: '', message: '' }
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
+  const [coverFailed, setCoverFailed] = useState(false);
 
   const toggleSelection = (id) => {
     const newKeys = new Set(selectedIds);
@@ -116,10 +117,17 @@ export default function AlbumView({ album, tracks }) {
       {/* Album Header */}
       <div className="card-elevated p-4 flex gap-4 bg-surfaceHigh">
         <div className="w-24 h-24 rounded-2xl overflow-hidden shrink-0 shadow-lg relative">
-          {album.coverUrl ? (
-            <img src={album.coverUrl} alt={`Portada de ${album.title}`} className="w-full h-full object-cover" />
+          {album.coverUrl && !coverFailed ? (
+            // Vía el proxy propio: el CDN de YouTube Music a veces es bloqueado por
+            // Chrome (ERR_BLOCKED_BY_ORB) al cargarlo directo desde otro origen.
+            <img
+              src={`/api/cover-proxy?url=${encodeURIComponent(album.coverUrl)}`}
+              alt={`Portada de ${album.title}`}
+              className="w-full h-full object-cover"
+              onError={() => setCoverFailed(true)}
+            />
           ) : (
-            <div className="w-full h-full bg-surface flex items-center justify-center">💿</div>
+            <div className="w-full h-full bg-surface flex items-center justify-center" aria-hidden="true">💿</div>
           )}
           {/* Badge */}
           <div className="absolute bottom-1 left-1 right-1 bg-black/70 rounded-lg text-center backdrop-blur-md">

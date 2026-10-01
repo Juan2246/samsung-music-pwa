@@ -395,7 +395,7 @@ export default function HomePage() {
 
         {/* Detail panel */}
         {selectedSong && (
-          <div ref={detailRef} className="space-y-4 pb-32 animate-slide-up">
+          <div ref={detailRef} className="space-y-4 pb-32 animate-slide-up scroll-mt-60">
             <div className="flex items-center gap-2 mt-2">
               <div className="flex-1 h-px bg-border" />
               <span className="text-xs text-textMuted px-2">Detalle de descarga</span>

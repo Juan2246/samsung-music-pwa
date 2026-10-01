@@ -102,7 +102,7 @@ export default function SearchBar({ onSearch, isLoading, placeholder }) {
           autoComplete="off"
           autoCorrect="off"
           spellCheck="false"
-          className="flex-1 bg-transparent py-4 pr-2 text-textPrimary placeholder-textMuted text-base focus:outline-none"
+          className="flex-1 min-w-0 bg-transparent py-4 pr-2 text-textPrimary placeholder-textMuted text-base focus:outline-none"
         />
 
         {/* Clear button */}
