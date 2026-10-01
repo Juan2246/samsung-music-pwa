@@ -3,6 +3,13 @@ import nextVitals from 'eslint-config-next/core-web-vitals';
 
 const eslintConfig = defineConfig([
   ...nextVitals,
+  {
+    rules: {
+      // Las portadas vienen de CDNs externos (iTunes, Spotify, YouTube) y se muestran
+      // pequeñas; next/image obligaría a pasar cada una por el optimizador del servidor.
+      '@next/next/no-img-element': 'off',
+    },
+  },
   globalIgnores([
     '.next/**',
     'out/**',

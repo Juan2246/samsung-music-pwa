@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function MetadataPanel({ song, lyrics, isLoadingLyrics, onMetadataChange }) {
   const [expanded, setExpanded] = useState(false);
@@ -11,26 +11,6 @@ export default function MetadataPanel({ song, lyrics, isLoadingLyrics, onMetadat
     year: song?.releaseYear?.toString() || '',
     genre: song?.genre || '',
   });
-
-  // Sync when song changes
-  useEffect(() => {
-    if (
-      song &&
-      (fields.title !== song.title ||
-        fields.artist !== song.artist ||
-        fields.album !== song.album)
-    ) {
-      const newFields = {
-        title: song.title || '',
-        artist: song.artist || '',
-        album: song.album || '',
-        year: song.releaseYear?.toString() || '',
-        genre: song.genre || '',
-      };
-      setFields(newFields);
-      onMetadataChange?.(newFields);
-    }
-  }, [song]); // Only re-run when the selected song changes
 
   const handleChange = (key, value) => {
     const updated = { ...fields, [key]: value };
@@ -69,7 +49,7 @@ export default function MetadataPanel({ song, lyrics, isLoadingLyrics, onMetadat
                 : 'bg-surfaceHigh text-textSecondary hover:text-textPrimary'
             }`}
           >
-            {editMode ? 'Guardado ✓' : 'Editar'}
+            {editMode ? 'Listo ✓' : 'Editar'}
           </button>
         </div>
       </div>
@@ -112,17 +92,6 @@ export default function MetadataPanel({ song, lyrics, isLoadingLyrics, onMetadat
               </span>
             ))}
           </div>
-          {song.previewUrl ? (
-            <div className="mt-2 flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-              <span className="text-[10px] text-success">Preview disponible</span>
-            </div>
-          ) : (
-            <div className="mt-2 flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-error" />
-              <span className="text-[10px] text-error">Sin preview de audio</span>
-            </div>
-          )}
         </div>
       </div>
 

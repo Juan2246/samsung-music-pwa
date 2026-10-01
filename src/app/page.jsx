@@ -20,9 +20,15 @@ export default function HomePage() {
   const [metadata, setMetadata] = useState(null);
   const [searchError, setSearchError] = useState(null);
   const detailRef = useRef(null);
+  // Contadores para descartar respuestas viejas: si el usuario busca o elige otra
+  // canción antes de que llegue la respuesta anterior, esa respuesta se ignora.
+  const searchSeq = useRef(0);
+  const lyricsSeq = useRef(0);
 
   const handleSearch = useCallback(async (q) => {
+    const seq = ++searchSeq.current;
     if (!q) {
+      setQuery('');
       setResults([]);
       setSearchError(null);
       return;
@@ -40,22 +46,25 @@ export default function HomePage() {
         if (isAlbumUrl && activeTab !== 'album') setActiveTab('album');
         const res = await fetch(`/api/album-parser?url=${encodeURIComponent(q)}`);
         const data = await res.json();
+        if (seq !== searchSeq.current) return;
         if (data.error) throw new Error(data.error);
         setAlbumData({ album: data.album, tracks: data.tracks });
         setResults([]);
       } else {
         const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&limit=25`);
         const data = await res.json();
+        if (seq !== searchSeq.current) return;
         if (data.error) throw new Error(data.error);
         setResults(data.results || []);
         setAlbumData(null);
       }
     } catch (err) {
+      if (seq !== searchSeq.current) return;
       setSearchError(err.message || 'Error al buscar. Intenta de nuevo.');
       setResults([]);
       setAlbumData(null);
     } finally {
-      setIsSearching(false);
+      if (seq === searchSeq.current) setIsSearching(false);
     }
   }, [activeTab]);
 
@@ -76,10 +85,7 @@ export default function HomePage() {
       transformHeader: (header) => header.trim().replace(/^\uFEFF/, ''), // Strip BOM + whitespace
       complete: (results) => {
         try {
-          // Debug: log first row to understand actual column names
           const columnNames = results.data.length > 0 ? Object.keys(results.data[0]) : [];
-          console.log('CSV columns detected:', columnNames);
-
 
           const parsedTracks = results.data.map((row, index) => {
             // ── Confirmed exact Spanish Exportify column names ──
@@ -164,6 +170,7 @@ export default function HomePage() {
   }, []);
 
   const handleSelectSong = useCallback(async (song) => {
+    const seq = ++lyricsSeq.current;
     setSelectedSong(song);
     setLyrics(null);
     setIsLoadingLyrics(true);
@@ -186,13 +193,27 @@ export default function HomePage() {
         `/api/lyrics?artist=${encodeURIComponent(song.artist)}&title=${encodeURIComponent(song.title)}`
       );
       const data = await res.json();
+      // Sin este control, la letra de la canción anterior podía llegar tarde y
+      // terminar incrustada (USLT) en el MP3 de la canción elegida después.
+      if (seq !== lyricsSeq.current) return;
       setLyrics(data.lyrics || null);
     } catch {
-      setLyrics(null);
+      if (seq === lyricsSeq.current) setLyrics(null);
     } finally {
-      setIsLoadingLyrics(false);
+      if (seq === lyricsSeq.current) setIsLoadingLyrics(false);
     }
   }, []);
+
+  const switchTab = (tab) => {
+    searchSeq.current++; // descarta una búsqueda en curso de la otra pestaña
+    setActiveTab(tab);
+    setQuery('');
+    setResults([]);
+    setAlbumData(null);
+    setSelectedSong(null);
+    setSearchError(null);
+    setIsSearching(false);
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -229,7 +250,7 @@ export default function HomePage() {
           {/* Tabs */}
           <div className="flex p-1 bg-surfaceHigh rounded-2xl mb-4 border border-border">
             <button
-              onClick={() => { setActiveTab('song'); setQuery(''); setResults([]); setAlbumData(null); setSearchError(null); }}
+              onClick={() => switchTab('song')}
               className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
                 activeTab === 'song'
                   ? 'bg-accent text-white shadow-glow'
@@ -239,7 +260,7 @@ export default function HomePage() {
               🎵 Canciones
             </button>
             <button
-              onClick={() => { setActiveTab('album'); setQuery(''); setResults([]); setAlbumData(null); setSearchError(null); }}
+              onClick={() => switchTab('album')}
               className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
                 activeTab === 'album'
                   ? 'bg-accent text-white shadow-glow'
@@ -262,8 +283,9 @@ export default function HomePage() {
 
           {/* Search bar */}
           {activeTab !== 'csv' && (
-            <SearchBar 
-              onSearch={handleSearch} 
+            <SearchBar
+              key={activeTab} // al cambiar de pestaña el campo vuelve a quedar vacío
+              onSearch={handleSearch}
               isLoading={isSearching} 
               placeholder={activeTab === 'song' ? 'Buscar canción o artista...' : 'Pega URL de Álbum (Spotify/YouTube)...'}
             />
@@ -301,7 +323,7 @@ export default function HomePage() {
               {[
                 { icon: '🎨', text: 'Carátula 600×600' },
                 { icon: '📝', text: 'Letras USLT' },
-                { icon: '🎵', text: 'Tags ID3v2.4' },
+                { icon: '🎵', text: 'Tags ID3v2.3' },
                 { icon: '📱', text: 'Samsung Music' },
               ].map((f) => (
                 <div
@@ -323,9 +345,21 @@ export default function HomePage() {
           </div>
         )}
 
+        {/* No results */}
+        {query && !isSearching && !searchError && !albumData && results.length === 0 && activeTab === 'song' && (
+          <div className="py-12 text-center animate-fade-in">
+            <p className="text-sm text-textPrimary font-medium">Sin resultados para «{query}»</p>
+            <p className="text-xs text-textSecondary mt-1">Prueba con otro título o con el nombre del artista.</p>
+          </div>
+        )}
+
         {/* Album View */}
         {albumData && (
-          <AlbumView album={albumData.album} tracks={albumData.tracks} />
+          <AlbumView
+            key={`${albumData.album.title}-${albumData.tracks.length}`}
+            album={albumData.album}
+            tracks={albumData.tracks}
+          />
         )}
 
         {/* Results list */}
@@ -364,6 +398,7 @@ export default function HomePage() {
             </div>
 
             <MetadataPanel
+              key={selectedSong.id} // al cambiar de canción el panel arranca limpio
               song={selectedSong}
               lyrics={lyrics}
               isLoadingLyrics={isLoadingLyrics}
@@ -411,28 +446,6 @@ export default function HomePage() {
 
       {/* Install prompt */}
       <InstallPrompt />
-
-      {/* Bottom nav bar (decorative) */}
-      <div className="glass fixed bottom-0 left-0 right-0 h-16 flex items-center justify-around px-8 safe-area-bottom z-30 border-t border-border">
-        <button className="flex flex-col items-center gap-1 text-accent">
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-          </svg>
-          <span className="text-[10px] font-medium">Inicio</span>
-        </button>
-        <button className="flex flex-col items-center gap-1 text-textMuted hover:text-textSecondary transition-colors">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <span className="text-[10px]">Buscar</span>
-        </button>
-        <button className="flex flex-col items-center gap-1 text-textMuted hover:text-textSecondary transition-colors">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
-          <span className="text-[10px]">Descargas</span>
-        </button>
-      </div>
     </div>
   );
 }

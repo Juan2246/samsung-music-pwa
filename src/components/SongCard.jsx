@@ -1,5 +1,4 @@
 'use client';
-import Image from 'next/image';
 
 function formatDuration(seconds) {
   if (!seconds) return '';
@@ -72,11 +71,6 @@ export default function SongCard({ song, isSelected, onClick }) {
         {song.genre && (
           <span className="text-[10px] bg-surfaceHigh text-textMuted px-2 py-0.5 rounded-full">
             {song.genre}
-          </span>
-        )}
-        {!song.previewUrl && (
-          <span className="text-[10px] text-warning px-2 py-0.5 rounded-full bg-warning/10">
-            Sin preview
           </span>
         )}
       </div>

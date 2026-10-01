@@ -147,7 +147,7 @@ export default function AlbumView({ album, tracks }) {
       )}
 
       {/* Batch Controls */}
-      <div className="card p-4 sticky top-24 z-30 shadow-2xl glass-strong border border-border">
+      <div className="card p-4 shadow-2xl border border-border">
         <div className="flex items-center justify-between mb-4">
           <label className="flex items-center gap-2 cursor-pointer group">
             <input 
@@ -208,7 +208,7 @@ export default function AlbumView({ album, tracks }) {
               key={track.id} 
               className={`p-3 rounded-2xl border transition-all duration-200
                 ${isSelected ? 'bg-surface border-accent/30' : 'bg-surface/50 border-border opacity-75'}
-                ${ds.state === 'loading' ? 'shadow-glow-sm' : ''}
+                ${ds.state === 'loading' ? 'shadow-glow' : ''}
               `}
             >
               <div className="flex items-center gap-3">
@@ -239,6 +239,11 @@ export default function AlbumView({ album, tracks }) {
                 )}
               </div>
 
+              {/* Error message (antes no se mostraba: solo había bloque para loading/done) */}
+              {ds.state === 'error' && ds.errorMsg && (
+                <p className="mt-2 ml-7 pl-4 text-[11px] text-error">{ds.errorMsg}</p>
+              )}
+
               {/* Individual Progress Bar */}
               {(ds.state === 'loading' || ds.state === 'done') && (
                 <div className="mt-3 ml-7 pl-4 border-l-2 border-surfaceHigh animate-fade-in">
@@ -254,7 +259,6 @@ export default function AlbumView({ album, tracks }) {
                       style={{ width: `${Math.max(5, ds.progress || 0)}%` }}
                     />
                   </div>
-                  {ds.errorMsg && <p className="text-[10px] text-error mt-1">{ds.errorMsg}</p>}
                 </div>
               )}
             </div>

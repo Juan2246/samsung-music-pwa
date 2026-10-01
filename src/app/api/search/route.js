@@ -41,7 +41,6 @@ export async function GET(request) {
         ? track.artworkUrl100.replace('100x100bb', '600x600bb')
         : null,
       coverThumb: track.artworkUrl100 || null,
-      previewUrl: track.previewUrl || null, // 30s AAC preview
       itunesUrl: track.trackViewUrl || null,
     }));
 

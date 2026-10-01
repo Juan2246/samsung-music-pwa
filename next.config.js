@@ -3,13 +3,6 @@ const nextConfig = {
   reactStrictMode: true,
   // Needed for Next.js 16 which has Turbopack as default
   turbopack: {},
-  images: {
-    remotePatterns: [
-      { protocol: 'https', hostname: '*.mzstatic.com' },
-      { protocol: 'https', hostname: 'i.scdn.co' },
-      { protocol: 'https', hostname: '*.genius.com' },
-    ],
-  },
 };
 
 // Only wrap with PWA plugin when building for production
