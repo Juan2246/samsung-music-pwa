@@ -2,9 +2,11 @@
 // Parses Spotify and YouTube Music Album/Playlist URLs and returns a tracklist.
 
 import SpotifyWebApi from 'spotify-web-api-node';
-import fetchNode from 'node-fetch';
-const { getPreview, getTracks } = require('spotify-url-info')(fetchNode);
+import spotifyUrlInfo from 'spotify-url-info';
 import { Innertube, UniversalCache } from 'youtubei.js';
+
+// Node 18+ trae fetch nativo: no hace falta node-fetch.
+const { getPreview, getTracks } = spotifyUrlInfo(globalThis.fetch);
 
 // 1. Initialize Spotify API
 // Requires SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET in .env.local
