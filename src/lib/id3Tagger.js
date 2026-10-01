@@ -1,12 +1,13 @@
 /**
  * id3Tagger.js
- * Full pipeline: AAC/M4A audio → MP3 (via AudioContext + lamejs) → ID3 tags (browser-id3-writer)
+ * Full pipeline: YouTube audio (M4A/WebM) → MP3 (via AudioContext + lamejs) → ID3 tags (browser-id3-writer)
  *
- * iTunes previews are AAC/M4A — they must be transcoded to real MP3 before
- * injecting ID3v2 tags, otherwise Samsung Music (and Windows) reject the file.
+ * The audio that yt-dlp delivers is AAC/M4A (or Opus/WebM) — it must be transcoded
+ * to real MP3 before injecting ID3v2.3 tags, otherwise Samsung Music (and Windows)
+ * reject the file.
  *
  * Pipeline:
- *  1. Fetch AAC audio via server proxy
+ *  1. Fetch the full audio via /api/youtube-audio (yt-dlp on the server)
  *  2. Decode AAC → PCM with AudioContext.decodeAudioData()
  *  3. Encode PCM → MP3 with lamejs
  *  4. Inject ID3 tags (TIT2, TPE1, TALB, APIC, USLT) with browser-id3-writer
@@ -14,6 +15,9 @@
  */
 
 import { resizeCoverArt } from './canvasResize';
+
+// ~2,6 s de audio a 44,1 kHz entre pausas para que la UI respire.
+const YIELD_EVERY_CHUNKS = 100;
 
 // ─── MP3 encoding ────────────────────────────────────────────────────────────
 
@@ -71,6 +75,7 @@ async function transcodeToMp3(inputBuffer, onProgress = () => {}) {
   const mp3Chunks = [];
   let offset = 0;
   let lastPct = 35;
+  let chunksSinceYield = 0;
 
   while (offset < numFrames) {
     const end = Math.min(offset + chunkSize, numFrames);
@@ -90,6 +95,13 @@ async function transcodeToMp3(inputBuffer, onProgress = () => {}) {
     if (pct !== lastPct) {
       onProgress(pct);
       lastPct = pct;
+    }
+
+    // Ceder el hilo cada cierto tiempo: sin esto la pestaña se congela durante
+    // la codificación y la barra de progreso no se repinta hasta el final.
+    if (++chunksSinceYield >= YIELD_EVERY_CHUNKS) {
+      chunksSinceYield = 0;
+      await new Promise((resolve) => setTimeout(resolve, 0));
     }
   }
 
@@ -172,16 +184,21 @@ async function injectID3Tags(mp3Buffer, tags, onProgress = () => {}) {
 
 /**
  * Full pipeline: YouTube audio → transcode to MP3 → inject ID3 → download.
- * @param {string} previewUrl - iTunes preview URL (kept for fallback, ignored now)
- * @param {object} tags - Must include tags.artist and tags.title for YouTube search
+ * @param {object} tags - Must include tags.artist and tags.title for YouTube search.
+ *   If tags.videoId is present (tracks that come from a YouTube playlist), that exact
+ *   video is downloaded instead of searching again.
  * @param {function} onProgress - Overall progress 0-100
  */
-export async function downloadTaggedMp3(previewUrl, tags, onProgress = () => {}) {
+export async function downloadTaggedMp3(tags, onProgress = () => {}) {
   onProgress(2);
 
   // 1. Fetch FULL audio from YouTube via server-side proxy
-  const ytUrl = `/api/youtube-audio?artist=${encodeURIComponent(tags.artist || '')}&title=${encodeURIComponent(tags.title || '')}`;
-  const audioRes = await fetch(ytUrl);
+  const params = new URLSearchParams(
+    tags.videoId
+      ? { videoId: tags.videoId }
+      : { artist: tags.artist || '', title: tags.title || '' }
+  );
+  const audioRes = await fetch(`/api/youtube-audio?${params}`);
   if (!audioRes.ok) {
     const err = await audioRes.json().catch(() => ({}));
     throw new Error(err.error || `YouTube audio failed: ${audioRes.status}`);
@@ -189,14 +206,20 @@ export async function downloadTaggedMp3(previewUrl, tags, onProgress = () => {})
 
   onProgress(8);
 
-  const aacBuffer = await audioRes.arrayBuffer();
+  const audioBuffer = await audioRes.arrayBuffer();
 
   onProgress(12);
 
   // 2. Transcode to MP3 (progress 12 → 82)
-  const mp3Buffer = await transcodeToMp3(aacBuffer, (p) => {
-    onProgress(12 + Math.floor(p * 0.7));
-  });
+  let mp3Buffer;
+  try {
+    mp3Buffer = await transcodeToMp3(audioBuffer, (p) => {
+      onProgress(12 + Math.floor(p * 0.7));
+    });
+  } catch (err) {
+    console.error('Decode/encode failed:', err);
+    throw new Error('El navegador no pudo decodificar el audio descargado. Prueba con Chrome o Samsung Internet.');
+  }
 
   onProgress(83);
 

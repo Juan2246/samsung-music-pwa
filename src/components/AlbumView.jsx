@@ -71,8 +71,8 @@ export default function AlbumView({ album, tracks }) {
       const coverProxyUrl = coverUrl ? `/api/cover-proxy?url=${encodeURIComponent(coverUrl)}` : null;
 
       await downloadTaggedMp3(
-        null, // No preview url
         {
+          videoId: track.videoId, // pistas de YouTube: se baja ese video exacto, sin volver a buscar
           title: track.title,
           artist: track.artist,
           album: track.album,

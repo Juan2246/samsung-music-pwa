@@ -19,7 +19,6 @@ export default function DownloadButton({ song, metadata, lyrics }) {
         : null;
 
       await downloadTaggedMp3(
-        song.previewUrl || null, // kept for API compat but unused now
         {
           title:  metadata?.title  || song.title,
           artist: metadata?.artist || song.artist,
