@@ -191,9 +191,13 @@ async function parseSpotifyAnonymous(href) {
   return { albumMetadata, tracks };
 }
 
+function spotifyStatus(err) {
+  return err?.statusCode || err?.body?.error?.status;
+}
+
 function spotifyErrorResponse(err) {
-  const status = err?.statusCode || err?.body?.error?.status;
-  console.error('Spotify API error:', status, err?.message);
+  const status = spotifyStatus(err);
+  console.error('Spotify API error:', status, JSON.stringify(err?.body?.error ?? err?.body ?? err?.message));
   if (status === 404) {
     return jsonError(
       'Spotify no encontró ese álbum o playlist. Puede ser privada, o una playlist editorial/algorítmica de Spotify, que la API ya no entrega a apps nuevas.',
@@ -201,7 +205,7 @@ function spotifyErrorResponse(err) {
     );
   }
   if (status === 401 || status === 403) {
-    return jsonError('Spotify rechazó las credenciales. Revisa SPOTIFY_CLIENT_ID y SPOTIFY_CLIENT_SECRET en .env.local.', 502);
+    return jsonError('Spotify rechazó la petición a la API oficial. Revisa tus claves en .env.local y que la cuenta dueña de la app tenga Premium activo (requisito de Spotify desde 2026).', 502);
   }
   if (status === 429) {
     return jsonError('Spotify está limitando las peticiones. Espera un momento e intenta de nuevo.', 429);
@@ -218,7 +222,14 @@ async function handleSpotify(source) {
         ? await parseSpotifyAlbum(source.id)
         : await parseSpotifyPlaylist(source.id);
     } catch (err) {
-      return { response: spotifyErrorResponse(err) };
+      // 403 "Active premium subscription required for the owner of the app":
+      // desde 2026 Spotify exige Premium al dueño de la app en modo desarrollo.
+      // En ese caso (o con claves inválidas) se intenta el método sin claves.
+      const status = spotifyStatus(err);
+      if (status !== 401 && status !== 403) {
+        return { response: spotifyErrorResponse(err) };
+      }
+      console.warn(`Spotify API oficial respondió ${status}; se usa el método sin claves (máx. 100 pistas).`);
     }
   }
 

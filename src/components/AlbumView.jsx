@@ -148,7 +148,7 @@ export default function AlbumView({ album, tracks }) {
           <div className="flex-1">
             <h3 className="text-sm font-bold text-warning">Lista Incompleta (Máx 100)</h3>
             <p className="text-xs text-textSecondary mt-1 leading-relaxed">
-              Spotify limita la extracción anónima a 100 canciones. Para poder descargar las {album.totalTracks} canciones de esta lista, configura tu propia API Key gratis siguiendo las instrucciones dentro de tu archivo <code className="bg-surface/50 border border-border px-1.5 py-0.5 rounded text-warning">.env.local</code>.
+              Sin la API oficial, Spotify solo deja leer las primeras 100 canciones. Para la lista completa configura tus claves en <code className="bg-surface/50 border border-border px-1.5 py-0.5 rounded text-warning">.env.local</code> (ver README); desde 2026 Spotify además exige que la cuenta dueña de la app tenga Premium. Un enlace de YouTube Music no tiene este límite.
             </p>
           </div>
         </div>
