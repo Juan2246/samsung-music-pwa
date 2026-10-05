@@ -1,6 +1,16 @@
-# Samsung Music DL
+<img src="docs/brand.svg" width="76" height="76" alt="Símbolo de Surco">
 
-PWA hecha con Next.js que busca una canción, baja su audio completo, lo convierte a MP3 y le escribe metadatos ID3 (portada, letra, artista, álbum, año y género) para que el archivo se vea completo en **Samsung Music**.
+# Surco · mi biblioteca musical
+
+Hice Surco porque quería abrir mi música en el celular y encontrarla bien organizada: portada, artista, álbum y letra dentro del propio archivo. La aplicación reúne esos datos, permite revisarlos y prepara el MP3 que después lee el reproductor.
+
+Construí la primera versión con un agente de IA en Antigravity. La parte más útil vino después: probar las integraciones reales, revisar las etiquetas del archivo y corregir lo que fallaba.
+
+**Next.js · React · Web Audio API · ID3v2.3 · yt-dlp**
+
+El repositorio conserva `samsung-music-pwa`. El nombre anterior, Samsung Music DL, sigue apareciendo en capturas y partes de la interfaz. Surco es un proyecto personal independiente, sin afiliación con Samsung.
+
+[Ver el caso en mi portafolio](https://portafolio-juan-torres-puce.vercel.app/proyectos/samsung-music-dl)
 
 ![Inicio en el celular](docs/capturas/movil-1-inicio.png)
 
