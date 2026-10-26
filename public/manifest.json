@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Samsung Music Downloader",
-  "short_name": "MusicDL",
+  "name": "TuneDrop",
+  "short_name": "TuneDrop",
   "description": "Descarga música con metadatos completos compatibles con Samsung Music",
   "start_url": "/",
   "scope": "/",

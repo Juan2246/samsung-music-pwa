@@ -229,7 +229,7 @@ export default function HomePage() {
             </div>
             <div>
               <h1 className="text-lg font-bold gradient-text leading-tight">
-                Samsung Music DL
+                TuneDrop
               </h1>
               <p className="text-xs text-textMuted">Descarga con ID3 completo</p>
             </div>

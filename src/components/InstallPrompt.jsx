@@ -46,7 +46,7 @@ export default function InstallPrompt() {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-textPrimary">Instalar App</p>
           <p className="text-xs text-textSecondary truncate">
-            Instala MusicDL como app nativa en tu Samsung
+            Instala TuneDrop como app nativa en tu Samsung
           </p>
         </div>
 

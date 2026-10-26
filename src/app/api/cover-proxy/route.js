@@ -49,7 +49,7 @@ export async function GET(request) {
 
   try {
     const res = await fetchWithTimeout(parsed.href, {
-      headers: { 'User-Agent': 'Samsung-Music-PWA/1.0' },
+      headers: { 'User-Agent': 'TuneDrop/1.0' },
       // Una redirección podría llevar a un host fuera de la lista: se rechaza.
       redirect: 'error',
     });

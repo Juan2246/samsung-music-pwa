@@ -4,7 +4,7 @@
 import { fetchWithTimeout, jsonError, readText } from '@/lib/server/http';
 
 // LRCLIB pide un User-Agent que identifique la app y su repositorio.
-const USER_AGENT = 'SamsungMusicPWA/1.0.0 (https://github.com/Juan2246/samsung-music-pwa)';
+const USER_AGENT = 'TuneDrop/1.0.0 (https://github.com/Juan2246/samsung-music-pwa)';
 const LYRICS_TIMEOUT_MS = 8_000;
 
 function toPlainLyrics(match) {

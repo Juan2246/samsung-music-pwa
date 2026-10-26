@@ -6,7 +6,7 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'Samsung Music Downloader',
+  title: 'TuneDrop',
   description: 'Descarga música con metadatos ID3 completos compatibles con Samsung Music',
   manifest: '/manifest.json',
   icons: {
@@ -16,7 +16,7 @@ export const metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'MusicDL',
+    title: 'TuneDrop',
   },
 };
 
